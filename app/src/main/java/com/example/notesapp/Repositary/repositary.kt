@@ -1,5 +1,6 @@
 package com.example.notesapp.Repositary
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.WorkerThread
@@ -24,18 +25,18 @@ import kotlin.coroutines.CoroutineContext
  * Therefore main task of repo class is to make changes in the data in roomDatabase or onlineApI/FirebaseDatabase.
  * Second task is to provide the data to the view model class which has all the data of the app
  */
-class Noterepositary (context: Context): CoroutineScope {
+class Noterepositary (application: Application): CoroutineScope {
 
     private var dao : NoteDao? = null
     val allNotes = MutableLiveData<List<Note>>()
-//    var mediatorLiveData : MediatorLiveData<List<Note>> = MediatorLiveData()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default   //Default dispatcher as we know is used to perform operations for saving large data permanently on the device
 
 
     init {
-        var db = Room.databaseBuilder(context,roomDataBase::class.java,"notes.db")
+        Log.i("tag","hey i am here too")
+        var db = Room.databaseBuilder(application.applicationContext,roomDataBase::class.java,"notes.db")
             .fallbackToDestructiveMigration()
             .build()
         dao = db.noteDao()
@@ -43,12 +44,15 @@ class Noterepositary (context: Context): CoroutineScope {
          * Linking this mutable Live data with this dao's Live data i.e when the data of the return type of funtion "getAllTheNodes_InProperOrderOf_Priority()" changes.
          * This will surely will be executed
          */
-        dao?.getAllTheNodes_InProperOrderOf_Priority()?.observe(context as AppCompatActivity, Observer {
+        Log.i("tag","hey i am here too 2")
 
+        dao?.getAllTheNodes_InProperOrderOf_Priority()?.observeForever {
             Log.i("tag of it = ",it.toString())
             allNotes.value = it
             Log.i("tag of allNotes = ",allNotes.toString())
-        })
+        }
+        Log.i("tag","hey i am here too 3")
+
     }
 
 
@@ -65,6 +69,7 @@ class Noterepositary (context: Context): CoroutineScope {
      * We can perform the operations on seperate thread using this way.
      * Here we have set the dispatcher as DEFAULT which is used to save data for a large data on the permanent storage
      */
+    @WorkerThread
     fun insert(note: Note){
         launch {
             dao?.insert(note)
@@ -73,6 +78,7 @@ class Noterepositary (context: Context): CoroutineScope {
 
 
 
+    @WorkerThread
     fun update(note: Note){
         launch {
             dao?.update(note)
@@ -81,14 +87,14 @@ class Noterepositary (context: Context): CoroutineScope {
 
 
 
+    @WorkerThread
     fun delete(note: Note){
         launch {
             dao?.delete(note)
         }
     }
 
-
-
+    @WorkerThread
     fun DeleteAllTheNotes(){
         launch {
             dao?.deleteAllNotes()

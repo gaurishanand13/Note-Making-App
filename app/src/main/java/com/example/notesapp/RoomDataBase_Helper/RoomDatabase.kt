@@ -16,13 +16,22 @@ abstract class roomDataBase : RoomDatabase(){
 
     abstract fun noteDao() : NoteDao
 
+    companion object{
 
-//    public fun getInstance(context: Context) : roomDataBase?{
-//        if(noteDatabase==null){
-//            noteDatabase = Room.databaseBuilder(context.applicationContext,roomDataBase::class.java,"notes.db")
-//                .fallbackToDestructiveMigration()
-//                .build()
-//        }
-//        return noteDatabase
-//    }
+        @Volatile
+        var instance : roomDataBase? = null
+
+        fun getDatabase(context: Context) : roomDataBase{
+            if(instance != null){
+                return instance as roomDataBase
+            }else{
+                instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    roomDataBase::class.java,
+                    "").build()
+
+                return instance as roomDataBase
+            }
+        }
+    }
 }

@@ -1,14 +1,12 @@
 package com.example.notesapp.viewModel
 
+import android.app.Application
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.example.notesapp.Repositary.Noterepositary
 import com.example.notesapp.RoomDataBase_Helper.Note
 
@@ -19,10 +17,10 @@ import com.example.notesapp.RoomDataBase_Helper.Note
  * And if we want to make any changes in the database. pass that data to the repo class. That repo class will make changes to both RoomDatabase and online Api database
  */
 
-class NoteViewModel(val context: Context) : ViewModel() {
+class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     private var  allNotes : MutableLiveData<List<Note>> = MutableLiveData()
-    private var noterepositary : Noterepositary? = null
+    private val noterepositary : Noterepositary
 
     /**
      * This function will be basically used to add an observer to this LIVE data whereever this view model is used
@@ -30,11 +28,11 @@ class NoteViewModel(val context: Context) : ViewModel() {
      */
     init {
         Log.i("tag","Hey i am in init")
-        noterepositary = Noterepositary(context)
+        noterepositary = Noterepositary(application)
         Log.i("tag","Hey i am in init2")
-        noterepositary?.getAllTheNotes()?.observe(context as AppCompatActivity, Observer {
+        noterepositary?.getAllTheNotes()?.observeForever {
             allNotes?.value = it
-        })
+        }
         Log.i("tag","Hey i am in init3")
     }
 
